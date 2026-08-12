@@ -12,7 +12,15 @@ export function TodayPage() {
   const [comment, setComment] = useState('');
 
   const tagsById = useMemo(() => new Map(fixtureTags.map((tag) => [tag.id, tag])), []);
-  const groups = useMemo(() => Map.groupBy(fixtureTags.filter((tag) => !tag.archived), (tag) => tag.group), []);
+  const groups = useMemo(() => {
+    const grouped = new Map<string, typeof fixtureTags>();
+    for (const tag of fixtureTags.filter((item) => !item.archived)) {
+      const group = grouped.get(tag.group) ?? [];
+      group.push(tag);
+      grouped.set(tag.group, group);
+    }
+    return grouped;
+  }, []);
 
   const toggleTag = (id: string) => setSelectedTags((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
 
