@@ -1,0 +1,47 @@
+:root {
+  color-scheme: light;
+
+  --font-ui: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --bg: #f4f6fa;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-muted: #eef2f7;
+  --text: #172033;
+  --text-muted: #667085;
+  --border: #dfe5ef;
+  --overlay: rgb(15 23 42 / 10%);
+
+  --condition-1: #ef4444;
+  --condition-2: #f97316;
+  --condition-3: #94a3b8;
+  --condition-4: #22c55e;
+  --condition-5: #3b82f6;
+
+  --tag-bg: #eef2ff;
+  --tag-text: #3446a8;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+
+  --radius-sm: 0.65rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.4rem;
+  --radius-pill: 999px;
+
+  --shadow-floating: 0 12px 34px rgb(16 24 40 / 14%);
+  --content-max: 48rem;
+}
+
+/* A future skin should be able to override tokens here or on [data-theme]. */
+[data-theme='compact'] {
+  --space-3: 0.6rem;
+  --space-4: 0.8rem;
+  --space-5: 1rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+}
