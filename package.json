@@ -1,18 +1,20 @@
 {
   "name": "self-track-v4",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --config mock/vite.config.ts",
+    "dev": "vite --config app/vite.config.ts",
+    "dev:app": "vite --config app/vite.config.ts",
     "dev:mock": "vite --config mock/vite.config.ts",
-    "build": "npm run build:mock",
+    "build": "npm run build:app",
+    "build:app": "tsc -b && vite build --config app/vite.config.ts",
     "build:mock": "tsc -b && vite build --config mock/vite.config.ts",
     "build:spec": "node scripts/build-spec.mjs",
-    "build:pages": "node scripts/clean-pages.mjs && npm run build:mock && npm run build:spec && node scripts/build-pages-index.mjs",
+    "build:pages": "node scripts/clean-pages.mjs && npm run build:app && npm run build:mock && npm run build:spec && node scripts/build-pages-index.mjs",
     "lint": "eslint . --max-warnings 0 && prettier --check .",
     "typecheck": "tsc -b --pretty false",
-    "test": "vitest run",
+    "test": "vitest run --config app/vite.config.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {
@@ -41,7 +43,5 @@
     "vite-plugin-pwa": "latest",
     "vitest": "latest"
   },
-  "engines": {
-    "node": ">=22"
-  }
+  "engines": { "node": ">=22" }
 }
