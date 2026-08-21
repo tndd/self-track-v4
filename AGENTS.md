@@ -1,27 +1,40 @@
 # AGENTS.md
 
-## Project intent
-self-track-v4 is a Vite/React rewrite of self-track-v3. It is intentionally optimized for easy iteration and browser-visible QA.
+## プロジェクトの目的
+self-track-v4 は self-track-v3 を Vite / React で作り直すプロジェクトです。反復しやすく、ブラウザ上で目視確認しやすい構成を優先します。
 
-## Artifact separation
-- `spec/` is the authoritative specification source. Its Markdown is built into the rich HTML specification on GitHub Pages.
-- `mock/` is an interactive, disposable prototype. It may explore ahead of the specification and may also lag behind the production app.
-- Never make the specification mechanically depend on mock implementation details.
-- Never treat mock markup/CSS as production architecture.
-- When the real app overtakes the mock, update or replace the mock only when it remains useful; do not force parity merely to keep them visually synchronized.
-- Pages exposes the two surfaces separately at `/spec/` and `/mock/`.
+## 言語
+- ユーザー向け説明、README、仕様書、設計文書、Issue、Pull Request、コミットメッセージなど、人間が読む文章は原則として日本語で記述する。
+- コード上の識別子、API名、ライブラリ名、規格名、一般的な技術用語は無理に日本語化しない。
+- 外部リポジトリへ投稿する場合など、既存の明確な言語慣習があるときはその慣習を優先する。
 
-## Legacy source hierarchy
-- v3 `mock/`: interaction/information reference only.
-- v3 `docs/` + `lib/domain/`: behavior/data/analysis reference.
-- v3 rendered Flutter/Web implementation: NOT a fidelity target.
-- v4 `spec/`: authoritative when decisions differ.
+## 成果物の分離
+- `spec/` は仕様の正本。Markdown から GitHub Pages 上の HTML 仕様書を生成する。
+- `app/` は日常利用する本番実装。
+- `mock/` は操作・情報設計を試すための交換可能なプロトタイプ。仕様より先行しても、逆に本番より遅れてもよい。
+- 仕様をモックの実装詳細へ機械的に依存させない。
+- モックのマークアップや CSS を本番アーキテクチャとして扱わない。
+- 本番アプリがモックを追い越した場合、モックを更新・置換するのは引き続き参考価値があるときだけとする。見た目を同期させるだけのために同一化を強制しない。
+- Pages では `/app/`、`/mock/`、`/spec/` を別々の面として公開する。
 
-## UI rule
-Do not over-polish phase-1 UI. Preserve changeability. Keep domain and storage logic independent from presentation. Use CSS tokens rather than component-local hard-coded palette values.
+## 旧版ソースの優先順位
+- v3 `mock/`: 操作・情報構造の参考資料としてのみ使う。
+- v3 `docs/` + `lib/domain/`: 挙動・データ・分析の参考資料。
+- v3 の Flutter / Web レンダリング結果: 見た目の忠実再現対象ではない。
+- 判断が食い違う場合は v4 `spec/` を正本とする。
 
-## Persistence rule
-Personal data belongs in a separate private data repository. Do not commit real health records here.
+## UI ルール
+UIを早い段階で過度に磨き込まない。後から交換できることを優先し、ドメイン・保存ロジックを表示層から分離する。コンポーネント内に配色を直書きせず、CSSトークンを使う。
 
-## Verification
-For UI changes, use real browser interactions and inspect screenshots when browser tooling is available. Screenshot capture alone is not sufficient. For Pages changes, verify both `/mock/` and `/spec/` build into the Pages artifact independently.
+## 永続化ルール
+実際の個人データは別の非公開データ領域に置く。このソースリポジトリへ本物の体調記録をコミットしない。
+
+v4.0 は IndexedDB を日常利用の永続化先として使い、JSON 書き出し・読み込みで持ち運び可能性を確保する。GitHub をリモート正本とする同期は v4.1 以降の機能であり、v4.0 の利用を妨げてはならない。
+
+## 検証
+UIを大きく変更した場合、ブラウザツールが利用できるなら実際の操作で確認し、スクリーンショットも目視する。スクリーンショットを撮るだけで確認済みとはしない。
+
+Pagesを変更した場合は `/app/`、`/mock/`、`/spec/` がそれぞれ独立して Pages 成果物へビルドされることを確認する。
+
+## Pull Request の単位
+一つの目的は原則として一つの Pull Request にまとめる。その目的を完成させるために必要なコード、テスト、README、仕様書などの更新も同じ Pull Request に含め、完成条件を満たすまでマージしない。
