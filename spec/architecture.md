@@ -1,41 +1,45 @@
-# Architecture
+# アーキテクチャ
 
-## 1. Layering
+## 1. レイヤー構造
 
 ```text
 UI / features
-    ↓ domain-facing repositories only
+    ↓ ドメイン向け repository のみ参照
 self-track domain
     ↓
 SelfTrackRepository
     ↓
-RepoStore + optional LocalReplica
+RepoStore + 任意の LocalReplica
     ↓
-GitHub repository (canonical files)
+GitHub repository（将来のリモート正本）
 ```
 
-Dependencies point downward. GitHub details must not appear in React feature components.
+依存方向は下向きに限定する。GitHub固有の処理を React の feature component に持ち込まない。
 
-## 2. Directory boundaries
+v4.0 の本番アプリでは IndexedDB を日常利用の永続化先として使う。上記の GitHub-backed 構成は v4.1 以降のリモート同期境界を示すものであり、v4.0 の利用に必須ではない。
+
+## 2. ディレクトリ境界
+
+想定する責務分割は以下。
 
 ```text
 src/
-  app/          routing and application composition
-  components/   reusable presentation components
-  domain/       models and pure algorithms
-  data/         storage interfaces/adapters/sync boundary
-  features/     screen-level UI and feature state
-  fixtures/     mock-only data
-  styles/       global tokens and skin
+  app/          routing とアプリ全体の構成
+  components/   再利用可能な表示コンポーネント
+  domain/       モデルと純粋なアルゴリズム
+  data/         保存interface・adapter・sync境界
+  features/     画面単位のUIと状態
+  fixtures/     mock専用データ
+  styles/       共通tokenとskin
 ```
 
-A future redesign should mostly replace `components/`, `features/*/*.css`, and token values. It should not require rewriting `domain/` or `data/`.
+将来のデザイン変更では、主として `components/`、`features/*/*.css`、token値を差し替える。`domain/` や `data/` の書き直しを要求してはならない。
 
-## 3. RepoStore: narrow generic layer
+## 3. RepoStore: 狭い汎用層
 
-RepoStore is **not a database abstraction**. It is a versioned document/event-store adapter for small personal datasets.
+RepoStore は**データベース抽象化ではない**。小規模な個人データ向けの、version付き document / event store adapter として扱う。
 
-Required shape:
+必要な形:
 
 ```ts
 export interface RepoStore {
@@ -46,18 +50,18 @@ export interface RepoStore {
 }
 ```
 
-`expectedVersion` maps naturally to a Git blob/content SHA and makes conflicts explicit.
+`expectedVersion` は Git の blob / content SHA に自然に対応し、競合を明示的に扱える。
 
-Not in scope:
-- arbitrary queries
-- joins
-- transactions across many records
-- high-frequency writes
-- multi-user row locking
+対象外:
+- 任意クエリ
+- join
+- 多数Recordをまたぐtransaction
+- 高頻度write
+- 多人数向けrow locking
 
-## 4. Canonical data layout (proposal)
+## 4. リモート正本のデータ配置案
 
-Use a separate **private** repository for personal records.
+個人記録には、ソースコードとは別の**非公開**リポジトリを使う。
 
 ```text
 schema/
@@ -71,24 +75,31 @@ events/
       2026-08-13.jsonl
 ```
 
-Daily JSONL keeps append-oriented event history small, human-readable and friendly to Git diffs. Tags/settings are ordinary versioned documents.
+日単位の JSONL にすると、append中心のイベント履歴を小さく保ち、人間が直接読め、Git diffでも追いやすい。タグや設定は通常のversion付きdocumentとして保存する。
 
-## 5. Local replica / offline path
+## 5. ローカル保存とオフライン経路
 
-Do not make network success a prerequisite for pressing “save”. When persistence work begins:
+「保存」操作をネットワーク成功に依存させない。
 
-1. write the record to a local IndexedDB outbox;
-2. update UI optimistically;
-3. batch/serialize GitHub writes;
-4. use remote version/SHA for conflict detection;
-5. pull remote changes on startup/focus and reconcile.
+v4.0:
+1. Record / Tag を IndexedDB に保存する。
+2. UIへ即時反映する。
+3. JSON export / import で持ち運び可能性を確保する。
 
-GitHub remains canonical; IndexedDB is a cache/outbox, not the durable source of truth.
+v4.1 以降でリモート同期を追加する場合:
+1. ローカル変更を outbox として扱う。
+2. GitHubへのwriteをbatch / serializeする。
+3. リモートversion / SHAで競合を検出する。
+4. 起動時やfocus時にリモート変更を取得し、reconcileする。
 
-## 6. Authentication boundary
+GitHub同期を導入した後も、ネットワーク障害によって日常の記録操作が失敗する設計にはしない。
 
-A browser token must never be hard-coded in source. The mock has no authentication. The production auth mechanism is a separate decision because it determines whether direct GitHub API access or a thin trusted proxy is appropriate.
+## 6. 認証境界
 
-## 7. Why Vite here
+ブラウザ用tokenをソースへ直書きしてはいけない。productionの認証方式は、GitHub APIをブラウザから直接呼ぶか、薄い信頼済みproxyを挟むかにも影響するため、v4.1 の独立した設計判断とする。
 
-self-track is primarily an interactive personal SPA/PWA. SSR/SEO/server-component machinery is not a current requirement. Reusing the existing Vite/React/TypeScript conventions reduces architecture choices and shortens browser QA loops.
+モックには認証を持ち込まない。
+
+## 7. Vite を使う理由
+
+self-track は主として対話型の個人用 SPA / PWA であり、現時点では SSR、SEO、Server Components は要件ではない。既存の Vite / React / TypeScript の構成を再利用することで、不要なアーキテクチャ選択を減らし、ブラウザQAの反復を短くする。
