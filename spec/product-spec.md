@@ -14,9 +14,10 @@ The product is optimized for one person, low data volume, and long-lived history
 - Logging must be fast enough to use when the user feels bad.
 
 ### 2.2 Data outlives the app
-- GitHub-backed files are the canonical durable representation.
-- UI technology is disposable.
 - Domain data must remain readable without running self-track.
+- v4.0 persists daily-use data in IndexedDB and provides human-readable JSON export/import so the application can be useful before remote sync exists.
+- A separate private GitHub-backed data repository remains the target canonical remote representation for v4.1+; remote authentication, reconciliation and sync must not block v4.0 daily use.
+- UI technology is disposable.
 
 ### 2.3 Analysis is event-centered
 - Primary question: “what tends to happen before/after X?”
@@ -24,10 +25,9 @@ The product is optimized for one person, low data volume, and long-lived history
 - Event-locked averages remain a first-class analysis primitive.
 
 ### 2.4 Visual design is intentionally replaceable
-- v4 phase 1 does not attempt final styling.
+- v4.0 does not attempt final styling.
 - Layout semantics, interaction states and information hierarchy matter more than exact pixels.
-- All semantic colors, spacing, radii and typography are defined through tokens.
-- Feature components may not import GitHub/network concerns.
+- All semantic colors, spacing, radii and typography should remain replaceable without rewriting persistence/domain behavior.
 
 ## 3. Canonical concepts
 
@@ -63,18 +63,19 @@ A tag attached to a record. Keep a numeric `value` field in the schema even when
 - Fast composer anchored near the bottom on small screens.
 - Condition defaults to normal.
 - `+` exposes condition + tag selection.
-- Tag selection can expand without navigating away.
 - Selected tags and comment remain visible before commit.
-- Record edit/delete is available from an intentional secondary gesture/menu, not accidental single tap.
+- Record deletion is available only through an intentional secondary control and confirmation.
 
 ### Calendar
 - Month overview with one compact daily condition indicator.
 - Month navigation.
-- Summary/trend area below the month grid.
-- Exact calendar decoration is not frozen in phase 1; v3 mock establishes the information hierarchy.
+- Selecting a day exposes its records.
+- Statistical summary/trend visualization is later analysis work and does not block v4.0.
 
 ### Analysis
-Phase-1 information architecture:
+Deferred to v4.1+.
+
+Planned primitives remain:
 - recent condition trend
 - event-locked analysis centered on a selected tag/action
 - action × symptom associations
@@ -86,23 +87,38 @@ Phase-1 information architecture:
 - archive/unarchive, never destructive deletion of referenced historical tags
 
 ### Settings
-Phase 1 keeps only storage/status controls and destructive reset affordance. Sync implementation is later work.
+v4.0 includes:
+- local storage/status information
+- JSON export/import
+- destructive local reset with confirmation
+
+Remote sync controls appear only when the sync implementation exists.
 
 ## 5. Domain rules preserved from v3
+
+These rules remain requirements for the later analysis implementation; they do not block the v4.0 logging release:
 
 - Condition domain value is `-2..2`; UI labels map to 1..5.
 - When gaps exceed 12 hours, analysis/visualization inserts a virtual return-to-normal point 12 hours after the last observation.
 - Daily score is based on trapezoidal integration, not the visual spline.
 - Event-locked average is the primary continuous-outcome analysis.
-- Odds ratio + Fisher exact test + lift remain the phase-1 discrete association tools.
+- Odds ratio + Fisher exact test + lift remain the discrete association tools.
 
-## 6. Phase-1 completion boundary
+## 6. v4.0 completion boundary
 
-This repository phase is complete when:
-- architecture and source-of-truth rules are documented;
-- a Vite/React skeleton exists for all five screens;
-- Today and Calendar are interactable enough to validate flow;
-- UI styling is tokenized and easy to replace;
-- the mock runs entirely on fixtures;
-- no real GitHub credentials or personal data are required;
-- RepoStore contracts are defined without prematurely implementing a universal database framework.
+v4.0 is complete when the production app can be used independently of the mock to:
+- record condition, tags and an optional comment using the real local date/time;
+- persist records and tags in IndexedDB across reloads;
+- browse historical records by month/day;
+- create/edit and archive/restore tags;
+- intentionally delete records;
+- export and restore the complete local dataset as human-readable JSON;
+- destructively reset local data with confirmation;
+- build and deploy alongside the separate mock and specification surfaces.
+
+Explicitly not required for v4.0:
+- GitHub authentication, canonical remote sync and conflict reconciliation;
+- statistical / event-locked analysis;
+- final visual design or PWA polish.
+
+The purpose of this boundary is to make “daily usable” a finished product state rather than treating production usefulness as something that only arrives after the remote-sync and analysis architecture is complete.
