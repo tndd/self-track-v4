@@ -9,7 +9,7 @@ class SelfTrackDb extends Dexie {
 
   constructor() {
     super('self-track-v4');
-    this.version(1).stores({ records: 'id,timestamp,condition', tags: 'id,name,group,role,archived' });
+    this.version(1).stores({ records: 'id,timestamp,condition', tags: 'id,name,group,role' });
   }
 }
 

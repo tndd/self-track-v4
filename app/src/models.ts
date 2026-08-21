@@ -37,8 +37,7 @@ export const conditionLabel = (value: ConditionValue) =>
 export const defaultTags: Tag[] = [
   { id: 'headache', name: '頭痛', group: '症状', role: 'symptom', archived: false },
   { id: 'fatigue', name: '倦怠感', group: '症状', role: 'symptom', archived: false },
-  { id: 'tramadol', name: 'トラマドール', group: '薬', role: 'action', archived: false },
-  { id: 'pregabalin', name: 'プレガバリン', group: '薬', role: 'action', archived: false },
+  { id: 'medication', name: '服薬', group: '行動', role: 'action', archived: false },
   { id: 'meal', name: '食事', group: '行動', role: 'action', archived: false },
   { id: 'poor-sleep', name: '睡眠不足', group: '要因', role: 'event', archived: false },
 ];

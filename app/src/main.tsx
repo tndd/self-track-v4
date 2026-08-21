@@ -88,8 +88,18 @@ function App() {
     await refresh();
   };
 
+  const editTag = async (tag: Tag) => {
+    const name = prompt('タグ名', tag.name);
+    if (name === null || !name.trim()) return;
+    const group = prompt('グループ', tag.group);
+    if (group === null) return;
+    await saveTag({ ...tag, name: name.trim(), group: group.trim() || 'その他' });
+    await refresh();
+  };
+
   const toggleArchive = async (tag: Tag) => {
     await saveTag({ ...tag, archived: !tag.archived });
+    setSelectedTags((current) => current.filter((id) => id !== tag.id));
     await refresh();
   };
 
@@ -112,6 +122,7 @@ function App() {
       const payload = parseBackup(JSON.parse(await file.text()));
       if (!confirm(`記録 ${payload.records.length} 件・タグ ${payload.tags.length} 件で現在のローカルデータを置き換えますか？`)) return;
       await restoreBackup(payload);
+      setSelectedTags([]);
       setNotice('バックアップを復元しました');
       await refresh();
     } catch (error) {
@@ -123,6 +134,7 @@ function App() {
     if (!confirm('ローカルの記録をすべて削除します。先にエクスポートしましたか？')) return;
     if (!confirm('本当に削除しますか？ この操作は元に戻せません。')) return;
     await resetLocalData();
+    setSelectedTags([]);
     setNotice('ローカルデータを初期化しました');
     await refresh();
   };
@@ -187,7 +199,7 @@ function App() {
             <button className="primary-action">追加</button>
           </form>
           <div className="tag-list">
-            {tags.map((tag) => <div className="card tag-row" key={tag.id}><div><strong>{tag.name}</strong><small>{tag.group} · {tag.role}</small></div><button onClick={() => void toggleArchive(tag)}>{tag.archived ? '復元' : 'アーカイブ'}</button></div>)}
+            {tags.map((tag) => <div className="card tag-row" key={tag.id}><div><strong>{tag.name}</strong><small>{tag.group} · {tag.role}{tag.archived ? ' · archived' : ''}</small></div><div className="tag-actions"><button onClick={() => void editTag(tag)}>編集</button><button onClick={() => void toggleArchive(tag)}>{tag.archived ? '復元' : 'アーカイブ'}</button></div></div>)}
           </div>
         </main>
       )}
@@ -209,16 +221,27 @@ function RecordCard({ record, tagsById, onDelete }: { record: TrackRecord; tagsB
 }
 
 function CalendarPage({ records, tagsById, month, setMonth, selectedDay, setSelectedDay, onDelete }: { records: TrackRecord[]; tagsById: Map<string, Tag>; month: Date; setMonth: (date: Date) => void; selectedDay: string; setSelectedDay: (value: string) => void; onDelete: (record: TrackRecord) => Promise<void> }) {
-  const year = month.getFullYear(); const monthIndex = month.getMonth();
+  const year = month.getFullYear();
+  const monthIndex = month.getMonth();
   const days = new Date(year, monthIndex + 1, 0).getDate();
   const firstWeekday = new Date(year, monthIndex, 1).getDay();
   const byDay = useMemo(() => {
     const map = new Map<string, TrackRecord[]>();
-    for (const record of records) { const key = dateKey(record.timestamp); const list = map.get(key) ?? []; list.push(record); map.set(key, list); }
+    for (const record of records) {
+      const key = dateKey(record.timestamp);
+      const list = map.get(key) ?? [];
+      list.push(record);
+      map.set(key, list);
+    }
     return map;
   }, [records]);
   const selected = byDay.get(selectedDay) ?? [];
-  return <main className="page"><div className="calendar-nav"><button onClick={() => setMonth(new Date(year, monthIndex - 1, 1))}>‹</button><strong>{year}年{monthIndex + 1}月</strong><button onClick={() => setMonth(new Date(year, monthIndex + 1, 1))}>›</button></div><div className="calendar-grid">{'日月火水木金土'.split('').map((day) => <div className="weekday" key={day}>{day}</div>)}{Array.from({ length: firstWeekday }, (_, index) => <span key={`blank-${index}`} />)}{Array.from({ length: days }, (_, index) => { const key = dateKey(new Date(year, monthIndex, index + 1)); const dayRecords = byDay.get(key) ?? []; const last = dayRecords[0]; return <button key={key} className={selectedDay === key ? 'day selected-day' : 'day'} data-ui={last ? conditionUiValue(last.condition) : undefined} onClick={() => setSelectedDay(key)}><span>{index + 1}</span>{dayRecords.length > 0 && <small>{dayRecords.length}</small>}</button>; })}</div><section className="day-detail"><h2>{selectedDay}</h2>{selected.length === 0 ? <div className="empty">記録はありません。</div> : selected.map((record) => <RecordCard key={record.id} record={record} tagsById={tagsById} onDelete={() => void onDelete(record)} />)}</section></main>;
+  const moveMonth = (offset: number) => {
+    const next = new Date(year, monthIndex + offset, 1);
+    setMonth(next);
+    setSelectedDay(dateKey(next));
+  };
+  return <main className="page"><div className="calendar-nav"><button onClick={() => moveMonth(-1)}>‹</button><strong>{year}年{monthIndex + 1}月</strong><button onClick={() => moveMonth(1)}>›</button></div><div className="calendar-grid">{'日月火水木金土'.split('').map((day) => <div className="weekday" key={day}>{day}</div>)}{Array.from({ length: firstWeekday }, (_, index) => <span key={`blank-${index}`} />)}{Array.from({ length: days }, (_, index) => { const key = dateKey(new Date(year, monthIndex, index + 1)); const dayRecords = byDay.get(key) ?? []; const last = dayRecords[0]; return <button key={key} className={selectedDay === key ? 'day selected-day' : 'day'} data-ui={last ? conditionUiValue(last.condition) : undefined} onClick={() => setSelectedDay(key)}><span>{index + 1}</span>{dayRecords.length > 0 && <small>{dayRecords.length}</small>}</button>; })}</div><section className="day-detail"><h2>{selectedDay}</h2>{selected.length === 0 ? <div className="empty">記録はありません。</div> : selected.map((record) => <RecordCard key={record.id} record={record} tagsById={tagsById} onDelete={() => void onDelete(record)} />)}</section></main>;
 }
 
 function pageLabel(page: Page) { return ({ today: 'Today', calendar: 'Calendar', tags: 'Tags', settings: 'Settings' })[page]; }
