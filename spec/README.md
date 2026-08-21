@@ -1,16 +1,17 @@
-# Specification source
+# 仕様書の正本
 
-`spec/` is the authoritative, human- and agent-readable source for self-track-v4 decisions.
+`spec/` は self-track-v4 の設計判断を、人間とエージェントの双方が読める形で管理する正本です。
 
-The files in this directory are deployed as a richer HTML documentation surface, but Markdown remains the editable source of truth. The HTML output is generated and must not be edited directly.
+このディレクトリ内の Markdown は GitHub Pages 上で読みやすい HTML 仕様書へ変換されますが、編集対象の正本はあくまで Markdown です。生成された HTML を直接編集してはいけません。
 
-## Relationship to the mock
+## 本番アプリとモックの関係
 
-The interactive mock lives separately under `mock/`.
+日常利用する本番アプリは `app/`、操作を試すためのモックは `mock/` に分離しています。
 
-- The **specification** says what behavior, semantics, boundaries, and accepted product decisions mean.
-- The **mock** is a cheap instrument for trying interaction and information-architecture ideas.
-- A mock experiment does not become a requirement merely because it exists.
-- The real application is allowed to overtake or replace the mock without creating a migration obligation back into the mock.
+- **仕様書** は、採用された挙動・意味論・境界・製品判断を定義する。
+- **本番アプリ** は、その時点で実際に使う実装である。
+- **モック** は、操作や情報設計の案を安価に試すための道具である。
+- モックに存在するという理由だけで、その案が要件になるわけではない。
+- 本番アプリがモックを追い越したり置き換えたりしても、モック側へ同じ変更を戻す義務は生じない。
 
-This separation is deliberate: it prevents a prototype from slowly becoming an accidental second implementation that must be kept in lockstep with production.
+この分離は意図的なものです。プロトタイプが徐々に第二の本番実装へ変質し、本番と常に同期しなければならない状態になることを防ぎます。
