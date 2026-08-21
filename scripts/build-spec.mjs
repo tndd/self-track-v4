@@ -8,10 +8,10 @@ const sourceDir = join(root, 'spec');
 const outDir = join(root, 'dist-pages', 'spec');
 
 const docs = [
-  ['product-spec.md', 'Product Spec', '目的、スコープ、データ意味論、主要機能'],
-  ['architecture.md', 'Architecture', 'RepoStore、データ境界、レイヤー構成'],
-  ['ui-contract.md', 'UI Contract', '変更耐性を優先したUIの契約と受け入れ基準'],
-  ['migration-notes.md', 'Migration Notes', 'v3から継承するもの・捨てるもの'],
+  ['product-spec.md', '製品仕様', '目的、スコープ、データ意味論、主要機能'],
+  ['architecture.md', 'アーキテクチャ', 'RepoStore、データ境界、レイヤー構成'],
+  ['ui-contract.md', 'UI契約', '変更耐性を優先したUIの契約と受け入れ基準'],
+  ['migration-notes.md', '移行メモ', 'v3から継承するもの・捨てるもの'],
 ];
 
 marked.setOptions({ gfm: true, breaks: false });
@@ -31,10 +31,10 @@ for (const [file, title] of docs) {
     const slug = basename(navFile, '.md');
     return `<a${slug === current ? ' class="active"' : ''} href="./${slug}.html">${navTitle}</a>`;
   }).join('');
-  const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f7fb"><title>${title} · self-track-v4</title><link rel="stylesheet" href="./styles.css"></head><body><div class="shell"><aside class="side"><div class="eyebrow">self-track-v4</div><div class="brand">Specification</div><nav class="nav">${pageNav}</nav><div class="jump"><a href="./">Spec Home</a><a href="../mock/">Open Mock</a></div></aside><article class="doc">${content}</article></div></body></html>`;
+  const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f7fb"><title>${title} · self-track-v4</title><link rel="stylesheet" href="./styles.css"></head><body><div class="shell"><aside class="side"><div class="eyebrow">self-track-v4</div><div class="brand">仕様書</div><nav class="nav">${pageNav}</nav><div class="jump"><a href="./">仕様書トップ</a><a href="../mock/">モックを開く</a></div></aside><article class="doc">${content}</article></div></body></html>`;
   await writeFile(join(outDir, `${current}.html`), html);
 }
 
 const cards = docs.map(([file, title, description]) => `<a class="card" href="./${basename(file, '.md')}.html"><b>${title}</b><span>${description}</span></a>`).join('');
-const index = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Specification · self-track-v4</title><link rel="stylesheet" href="./styles.css"></head><body><main class="index"><span class="pill">Specification Site</span><h1>self-track-v4<br>Specification</h1><p>仕様書はモックから独立した正本です。実装・モックが変化しても、受け入れ済みのプロダクト判断、データ意味論、アーキテクチャ契約をここに残します。</p><div class="cards">${cards}</div><p style="margin-top:28px"><a href="../mock/">→ Interactive Mock を開く</a></p></main></body></html>`;
+const index = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>仕様書 · self-track-v4</title><link rel="stylesheet" href="./styles.css"></head><body><main class="index"><span class="pill">仕様書</span><h1>self-track-v4<br>仕様書</h1><p>仕様書はモックから独立した正本です。実装・モックが変化しても、受け入れ済みの製品判断、データ意味論、アーキテクチャ契約をここに残します。</p><div class="cards">${cards}</div><p style="margin-top:28px"><a href="../mock/">→ 操作モックを開く</a></p></main></body></html>`;
 await writeFile(join(outDir, 'index.html'), index);
