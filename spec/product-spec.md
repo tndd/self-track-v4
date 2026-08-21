@@ -1,124 +1,126 @@
-# self-track-v4 Product Specification
+# self-track-v4 製品仕様
 
-## 1. Purpose
+## 1. 目的
 
-self-track records sparse, exceptional changes in physical/mental condition and the actions or circumstances around them, then helps discover time-lagged relationships.
+self-track は、身体・精神状態の例外的な変化と、その前後にあった行動や状況を疎に記録し、時間差を含む関係を探るためのアプリです。
 
-The product is optimized for one person, low data volume, and long-lived history. It is not a clinical system, multi-user SaaS, or high-frequency telemetry platform.
+一人で長期間使い、データ量は比較的小さいことを前提とします。臨床システム、多人数向けSaaS、高頻度テレメトリ基盤を目指すものではありません。
 
-## 2. Product principles
+## 2. 製品原則
 
-### 2.1 Exceptional logging, not continuous homework
-- Normal state may be omitted.
-- A missing condition entry is interpreted according to the decay model, not as an unknown questionnaire response.
-- Logging must be fast enough to use when the user feels bad.
+### 2.1 常時入力ではなく、例外を記録する
+- 通常状態は省略してよい。
+- 体調記録がない時間は「未回答」とは扱わず、減衰モデルに従って解釈する。
+- 調子が悪いときでも使える入力速度を優先する。
 
-### 2.2 Data outlives the app
-- Domain data must remain readable without running self-track.
-- v4.0 persists daily-use data in IndexedDB and provides human-readable JSON export/import so the application can be useful before remote sync exists.
-- A separate private GitHub-backed data repository remains the target canonical remote representation for v4.1+; remote authentication, reconciliation and sync must not block v4.0 daily use.
-- UI technology is disposable.
+### 2.2 データはアプリより長生きする
+- ドメインデータは self-track を起動しなくても読める状態を保つ。
+- v4.0 は IndexedDB に日常利用データを保存し、人間が読める JSON の書き出し・読み込みを提供する。リモート同期がなくても実用品として成立させる。
+- v4.1 以降では、別の非公開 GitHub データリポジトリをリモート側の正本とする予定。認証・競合解決・同期は v4.0 の利用を妨げてはならない。
+- UI技術は交換可能なものとして扱う。
 
-### 2.3 Analysis is event-centered
-- Primary question: “what tends to happen before/after X?”
-- Medication/action events, symptoms, meals, sleep and other tags should be alignable on a shared timeline.
-- Event-locked averages remain a first-class analysis primitive.
+### 2.3 分析はイベント中心
+- 主な問いは「Xの前後では何が起こりやすいか」。
+- 薬・行動、症状、食事、睡眠、その他タグを共通の時系列上で揃えて比較できるようにする。
+- イベント同期平均（event-locked average）は主要な分析手段として維持する。
 
-### 2.4 Visual design is intentionally replaceable
-- v4.0 does not attempt final styling.
-- Layout semantics, interaction states and information hierarchy matter more than exact pixels.
-- All semantic colors, spacing, radii and typography should remain replaceable without rewriting persistence/domain behavior.
+### 2.4 見た目は交換可能にする
+- v4.0 では最終デザインを確定しない。
+- ピクセル単位の忠実さより、レイアウトの意味、操作状態、情報の優先順位を重視する。
+- 色、余白、角丸、書体などは、永続化やドメイン挙動を書き換えずに交換できる状態を保つ。
 
-## 3. Canonical concepts
+## 3. 基本概念
 
-### Record
-A point-in-time observation containing:
+### Record（記録）
+特定時点の観測値。
 - id
 - timestamp
-- condition value (`-2..2` domain value; UI may show `1..5`)
-- optional comment
-- zero or more tag references
+- condition value（ドメイン値 `-2..2`、UIでは `1..5` 表示可）
+- 任意の comment
+- 0個以上の tag reference
 
-### Tag
-A reusable label with:
+### Tag（タグ）
+再利用可能なラベル。
 - id
 - name
 - group / role
 - archived state
-- optional presentation metadata
+- 任意の表示用メタデータ
 
-Suggested semantic roles retained from v3:
+v3 から維持する主な role:
 - action
 - symptom
 - event
-- condition (condition itself remains the record score rather than a normal tag)
+- condition は通常のタグではなく Record のスコアとして保持する
 
-### Tag occurrence
-A tag attached to a record. Keep a numeric `value` field in the schema even when the first UI uses `1.0`, because dose/intensity is a natural future requirement.
+### Tag occurrence（タグ出現）
+Record に付与されたタグ。初期UIで `1.0` しか使わなくても、将来の投与量・強度などを表現できるよう schema には数値 `value` を残す。
 
-## 4. Core screens
+## 4. 主要画面
 
 ### Today
-- Current-day timeline.
-- Fast composer anchored near the bottom on small screens.
-- Condition defaults to normal.
-- `+` exposes condition + tag selection.
-- Selected tags and comment remain visible before commit.
-- Record deletion is available only through an intentional secondary control and confirmation.
+- 当日の時系列を表示する。
+- 小さい画面では高速入力欄を下部付近へ固定する。
+- condition の初期値は通常状態。
+- `+` から condition とタグ選択を展開する。
+- 保存前に選択済みタグとコメントを確認できる。
+- 記録削除は意図的な二次操作と確認を経た場合のみ行う。
 
 ### Calendar
-- Month overview with one compact daily condition indicator.
-- Month navigation.
-- Selecting a day exposes its records.
-- Statistical summary/trend visualization is later analysis work and does not block v4.0.
+- 月単位の一覧に日ごとの体調指標を簡潔に表示する。
+- 月移動ができる。
+- 日を選択するとその日の記録を表示する。
+- 統計要約や傾向グラフは後続の分析機能とし、v4.0 の完成条件には含めない。
 
 ### Analysis
-Deferred to v4.1+.
+v4.1 以降へ延期する。
 
-Planned primitives remain:
-- recent condition trend
-- event-locked analysis centered on a selected tag/action
-- action × symptom associations
-- explicit insufficient-data states
+予定している主要機能:
+- 最近の体調傾向
+- 選択したタグ・行動を中心にしたイベント同期分析
+- 行動 × 症状の関連
+- データ不足状態の明示
 
 ### Tags
-- group-aware list
-- create/edit
-- archive/unarchive, never destructive deletion of referenced historical tags
+- group を考慮した一覧
+- 作成・編集
+- アーカイブ・復元
+- 過去記録から参照されているタグは破壊的に削除しない
 
 ### Settings
-v4.0 includes:
-- local storage/status information
-- JSON export/import
-- destructive local reset with confirmation
+v4.0 では以下を含む。
+- ローカル保存状態
+- JSON 書き出し・読み込み
+- 確認付きのローカル全初期化
 
-Remote sync controls appear only when the sync implementation exists.
+リモート同期設定は、同期機能が実装されてから表示する。
 
-## 5. Domain rules preserved from v3
+## 5. v3 から維持するドメイン規則
 
-These rules remain requirements for the later analysis implementation; they do not block the v4.0 logging release:
+以下は将来の分析実装に対する要件であり、v4.0 の記録機能を完成させるための必須条件ではない。
 
-- Condition domain value is `-2..2`; UI labels map to 1..5.
-- When gaps exceed 12 hours, analysis/visualization inserts a virtual return-to-normal point 12 hours after the last observation.
-- Daily score is based on trapezoidal integration, not the visual spline.
-- Event-locked average is the primary continuous-outcome analysis.
-- Odds ratio + Fisher exact test + lift remain the discrete association tools.
+- condition のドメイン値は `-2..2`、UI表示は 1..5 に対応させる。
+- 記録間隔が12時間を超えた場合、分析・可視化では最後の観測から12時間後に通常状態へ戻る仮想点を挿入する。
+- 日次スコアは表示用スプラインではなく台形積分を基礎にする。
+- イベント同期平均を連続値分析の主要手段とする。
+- 離散関連分析では odds ratio、Fisher exact test、lift を維持する。
 
-## 6. v4.0 completion boundary
+## 6. v4.0 の完成境界
 
-v4.0 is complete when the production app can be used independently of the mock to:
-- record condition, tags and an optional comment using the real local date/time;
-- persist records and tags in IndexedDB across reloads;
-- browse historical records by month/day;
-- create/edit and archive/restore tags;
-- intentionally delete records;
-- export and restore the complete local dataset as human-readable JSON;
-- destructively reset local data with confirmation;
-- build and deploy alongside the separate mock and specification surfaces.
+v4.0 は、モックに依存せず本番アプリ単体で以下ができた時点で完成とする。
 
-Explicitly not required for v4.0:
-- GitHub authentication, canonical remote sync and conflict reconciliation;
-- statistical / event-locked analysis;
-- final visual design or PWA polish.
+- 実際のローカル日時を使い、condition・タグ・任意コメントを記録できる。
+- Record と Tag が IndexedDB に保存され、再読み込み後も残る。
+- 月・日単位で過去記録を閲覧できる。
+- タグを作成・編集・アーカイブ・復元できる。
+- 記録を意図的に削除できる。
+- ローカルデータ一式を人間が読める JSON として書き出し・復元できる。
+- 確認を経てローカルデータを全初期化できる。
+- 本番アプリ、モック、仕様書を別々の面としてビルド・公開できる。
 
-The purpose of this boundary is to make “daily usable” a finished product state rather than treating production usefulness as something that only arrives after the remote-sync and analysis architecture is complete.
+v4.0 に明示的に含めないもの:
+- GitHub認証、リモート正本への自動同期、競合解決
+- 統計分析・イベント同期分析
+- 最終ビジュアルデザインや PWA の磨き込み
+
+この境界の目的は、「毎日使える状態」自体を完成した製品状態として扱うことにあります。リモート同期や分析アーキテクチャが完成するまで本番利用を先送りにはしません。

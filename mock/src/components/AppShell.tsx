@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
 
 const nav = [
-  ['/', 'Today'],
-  ['/calendar', 'Calendar'],
-  ['/analysis', 'Analysis'],
-  ['/tags', 'Tags'],
-  ['/settings', 'Settings'],
+  ['/', '今日'],
+  ['/calendar', '履歴'],
+  ['/analysis', '分析'],
+  ['/tags', 'タグ'],
+  ['/settings', '設定'],
 ] as const;
 
 const titles: Record<string, string> = Object.fromEntries(nav.map(([path, title]) => [path, title]));

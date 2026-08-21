@@ -77,7 +77,7 @@ export function TodayPage() {
                   ))}
                 </div>
               )}
-              <div className="panel-head"><span>Status</span><button className="text-button" type="button" onClick={() => setTagsOpen((value) => !value)}>{tagsOpen ? 'タグを閉じる' : 'タグを追加'}</button></div>
+              <div className="panel-head"><span>体調</span><button className="text-button" type="button" onClick={() => setTagsOpen((value) => !value)}>{tagsOpen ? 'タグを閉じる' : 'タグを追加'}</button></div>
               <StatusScale value={condition} onChange={setCondition} />
             </div>
           )}
