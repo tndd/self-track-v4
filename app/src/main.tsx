@@ -148,7 +148,7 @@ function App() {
           <h1>self-track</h1>
           <p>{page === 'today' ? formatDate(new Date()) : pageLabel(page)}</p>
         </div>
-        <span className="local-badge">local</span>
+        <span className="local-badge">ローカル</span>
       </header>
 
       <nav className="top-nav" aria-label="主要ナビゲーション">
@@ -199,7 +199,7 @@ function App() {
             <button className="primary-action">追加</button>
           </form>
           <div className="tag-list">
-            {tags.map((tag) => <div className="card tag-row" key={tag.id}><div><strong>{tag.name}</strong><small>{tag.group} · {tag.role}{tag.archived ? ' · archived' : ''}</small></div><div className="tag-actions"><button onClick={() => void editTag(tag)}>編集</button><button onClick={() => void toggleArchive(tag)}>{tag.archived ? '復元' : 'アーカイブ'}</button></div></div>)}
+            {tags.map((tag) => <div className="card tag-row" key={tag.id}><div><strong>{tag.name}</strong><small>{tag.group} · {tagRoleLabel(tag.role)}{tag.archived ? ' · アーカイブ済み' : ''}</small></div><div className="tag-actions"><button onClick={() => void editTag(tag)}>編集</button><button onClick={() => void toggleArchive(tag)}>{tag.archived ? '復元' : 'アーカイブ'}</button></div></div>)}
           </div>
         </main>
       )}
@@ -209,7 +209,7 @@ function App() {
           <section className="card"><h2>ローカル保存</h2><p>IndexedDB に記録 {records.length} 件、タグ {tags.length} 件を保存しています。ブラウザを閉じても残ります。</p></section>
           <section className="card"><h2>バックアップ</h2><p>JSONはアプリなしでも読める形式です。GitHub同期を入れるまでは定期的なエクスポートを推奨します。</p><div className="actions"><button className="primary-action" onClick={exportBackup}>JSONを書き出す</button><label className="file-action">JSONを読み込む<input type="file" accept="application/json,.json" onChange={(event) => void importBackup(event)} /></label></div></section>
           <section className="card danger"><h2>ローカルデータを初期化</h2><p>記録を削除し、タグだけ既定値へ戻します。</p><button onClick={() => void reset()}>すべて削除</button></section>
-          <section className="card"><h2>v4.1+ に延期</h2><p>GitHub自動同期・認証・競合解決・統計分析は、v4.0の日常利用を妨げないよう切り離しています。</p></section>
+          <section className="card"><h2>v4.1 以降へ延期</h2><p>GitHub自動同期・認証・競合解決・統計分析は、v4.0の日常利用を妨げないよう切り離しています。</p></section>
         </main>
       )}
     </div>
@@ -244,6 +244,7 @@ function CalendarPage({ records, tagsById, month, setMonth, selectedDay, setSele
   return <main className="page"><div className="calendar-nav"><button onClick={() => moveMonth(-1)}>‹</button><strong>{year}年{monthIndex + 1}月</strong><button onClick={() => moveMonth(1)}>›</button></div><div className="calendar-grid">{'日月火水木金土'.split('').map((day) => <div className="weekday" key={day}>{day}</div>)}{Array.from({ length: firstWeekday }, (_, index) => <span key={`blank-${index}`} />)}{Array.from({ length: days }, (_, index) => { const key = dateKey(new Date(year, monthIndex, index + 1)); const dayRecords = byDay.get(key) ?? []; const last = dayRecords[0]; return <button key={key} className={selectedDay === key ? 'day selected-day' : 'day'} data-ui={last ? conditionUiValue(last.condition) : undefined} onClick={() => setSelectedDay(key)}><span>{index + 1}</span>{dayRecords.length > 0 && <small>{dayRecords.length}</small>}</button>; })}</div><section className="day-detail"><h2>{selectedDay}</h2>{selected.length === 0 ? <div className="empty">記録はありません。</div> : selected.map((record) => <RecordCard key={record.id} record={record} tagsById={tagsById} onDelete={() => void onDelete(record)} />)}</section></main>;
 }
 
-function pageLabel(page: Page) { return ({ today: 'Today', calendar: 'Calendar', tags: 'Tags', settings: 'Settings' })[page]; }
+function pageLabel(page: Page) { return ({ today: '今日', calendar: '履歴', tags: 'タグ', settings: '設定' })[page]; }
+function tagRoleLabel(role: TagRole) { return ({ symptom: '症状', action: '行動 / 薬', event: '要因 / イベント' })[role]; }
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);
